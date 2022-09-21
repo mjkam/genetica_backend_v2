@@ -20,12 +20,16 @@ public class PipelineTaskJob {
     @JoinColumn(name = "pipeline_job_id")
     private PipelineJob pipelineJob;
 
+    @Column(name = "pipeline_task_id")
+    private Integer pipelineTaskId;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private JobStatus status;
 
-    public PipelineTaskJob(PipelineJob pipelineJob) {
+    public PipelineTaskJob(PipelineJob pipelineJob, int pipelineTaskId) {
         this.pipelineJob = pipelineJob;
+        this.pipelineTaskId = pipelineTaskId;
         this.status = JobStatus.PENDING;
     }
 

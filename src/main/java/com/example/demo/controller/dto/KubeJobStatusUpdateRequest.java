@@ -10,7 +10,7 @@ import lombok.ToString;
 @ToString
 public class KubeJobStatusUpdateRequest {
     private Long pipelineJobId;
-    private Long pipelineTaskJobId;
+    private Integer pipelineTaskId;
     private Long kubeJobId;
     private JobStatus jobStatus;
 }

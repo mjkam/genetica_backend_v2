@@ -8,18 +8,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 public class KubeCallbackController {
     private final PipelineService pipelineService;
 
     @PostMapping("/result")
-    public ResponseEntity<Object> ok(@RequestBody KubeJobStatusUpdateRequest request) {
+    public ResponseEntity<Object> ok(@RequestBody KubeJobStatusUpdateRequest request) throws IOException, InterruptedException {
         System.out.println("====callback=====");
         System.out.println(request);
         pipelineService.handleKubeJobResult(
                 request.getPipelineJobId(),
-                request.getPipelineTaskJobId(),
+                request.getPipelineTaskId(),
                 request.getKubeJobId(),
                 request.getJobStatus()
         );

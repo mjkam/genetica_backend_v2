@@ -46,7 +46,7 @@ public class Tool {
     @Getter
     public static class Input {
         private String label;
-        private boolean requireSampleId;
+        private boolean isSample;
     }
 
     @AllArgsConstructor
@@ -54,7 +54,7 @@ public class Tool {
     @Getter
     public static class Output {
         private String label;
-        private boolean saveWithSampleId;
         private String outputName;
+        private boolean isSample;
     }
 }

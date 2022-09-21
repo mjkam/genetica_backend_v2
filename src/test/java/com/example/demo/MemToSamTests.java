@@ -40,7 +40,7 @@ public class MemToSamTests {
         List<Tool.Output> toolOutputs = new ArrayList<>();
 
         Tool.Input toolInput = new Tool.Input("INPUT_REFERENCE", false);
-        Tool.Output toolOutput = new Tool.Output("OUTPUT_REFERENCE", false, "${INPUT_REFERENCE}");
+        Tool.Output toolOutput = new Tool.Output("OUTPUT_REFERENCE", "${INPUT_REFERENCE}", false);
 
         toolInputs.add(toolInput);
         toolOutputs.add(toolOutput);

@@ -46,7 +46,7 @@ public class Pipeline {
     public static class Input {
         private Integer pipelineTaskId;
         private String pipelineTaskLabel;
-        private boolean requireSampleId;
+        private boolean isSample;
     }
 
     @NoArgsConstructor
@@ -55,7 +55,7 @@ public class Pipeline {
     public static class Output {
         private Integer pipelineTaskId;
         private String pipelineTaskLabel;
-        private boolean requireSampleId;
+        private boolean isSample;
     }
 
     @NoArgsConstructor

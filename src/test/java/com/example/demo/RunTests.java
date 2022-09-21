@@ -50,15 +50,13 @@ public class RunTests {
         List<Tool.Output> toolOutputs = new ArrayList<>();
 
         Tool.Input toolInput = new Tool.Input("INPUT_REFERENCE", false);
-        Tool.Output toolOutput = new Tool.Output("OUTPUT_REFERENCE", false, "${INPUT_REFERENCE}");
+        Tool.Output toolOutput = new Tool.Output("OUTPUT_REFERENCE", "${INPUT_REFERENCE}", false);
 
         toolInputs.add(toolInput);
         toolOutputs.add(toolOutput);
 
         Tool tool = new Tool("bwa", toolInputs, toolOutputs, "bwa index ${INPUT_REFERENCE}", "338282184009.dkr.ecr.ap-northeast-2.amazonaws.com/bwa:latest");
         tool = toolRepository.save(tool);
-
-
 
         UserFile userFile = new UserFile();
         ReflectionTestUtils.setField(userFile, "name", "MT.fa");
@@ -105,7 +103,7 @@ public class RunTests {
         List<PipelineJobInputUserFile> pipelineJobInputUserFiles = new ArrayList<>();
         pipelineJobInputUserFiles.add(new PipelineJobInputUserFile(1, "INPUT_REFERENCE", userFile.getId()));
 
-//        pipelineService.runPipeline(pipeline.getId(), pipelineJobInputUserFiles);
+        pipelineService.runPipeline(pipeline.getId(), pipelineJobInputUserFiles);
     }
 
     @Test
@@ -114,7 +112,7 @@ public class RunTests {
                 .perform(
                         post("/result")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(createRequest(1L, 1L, 1L, JobStatus.RUNNING)))
+                                .content(createRequest(1L, 1, 1L, JobStatus.RUNNING)))
                 .andExpect(status().isOk());
     }
 
@@ -124,14 +122,14 @@ public class RunTests {
                 .perform(
                         post("/result")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(createRequest(1L, 1L, 5L, JobStatus.SUCCESS)))
+                                .content(createRequest(1L, 1, 1L, JobStatus.SUCCESS)))
                 .andExpect(status().isOk());
     }
 
-    private String createRequest(long pipelineJobId, long pipelineTaskJobId, long kubeJobId, JobStatus jobStatus) throws JsonProcessingException {
+    private String createRequest(long pipelineJobId, int pipelineTaskId, long kubeJobId, JobStatus jobStatus) throws JsonProcessingException {
         KubeJobStatusUpdateRequest request = new KubeJobStatusUpdateRequest();
         ReflectionTestUtils.setField(request, "pipelineJobId", pipelineJobId);
-        ReflectionTestUtils.setField(request, "pipelineTaskJobId", pipelineTaskJobId);
+        ReflectionTestUtils.setField(request, "pipelineTaskId", pipelineTaskId);
         ReflectionTestUtils.setField(request, "kubeJobId", kubeJobId);
         ReflectionTestUtils.setField(request, "jobStatus", jobStatus);
 

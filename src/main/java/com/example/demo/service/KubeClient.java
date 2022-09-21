@@ -34,7 +34,7 @@ public class KubeClient {
         this.apiInstance = new BatchV1Api(client);
     }
 
-    public void runKubeJob(String jobName, String imageName, String command, List<PipelineJobEnv> pipelineJobEnvs, long pipelineJobId, long pipelineTaskJobId, long kubeJobId) {
+    public void runKubeJob(String jobName, String imageName, String command, List<PipelineJobEnv> pipelineJobEnvs, long pipelineJobId, long pipelineTaskId, long kubeJobId) {
         Map<String, String> totalEnvs = new HashMap<>();
 
         for (PipelineJobEnv pipelineJobEnv: pipelineJobEnvs) {
@@ -42,7 +42,7 @@ public class KubeClient {
         }
         totalEnvs.put("SERVER_URL", SERVER_URL);
         totalEnvs.put("pipelineJobId", String.valueOf(pipelineJobId));
-        totalEnvs.put("pipelineTaskJobId", String.valueOf(pipelineTaskJobId));
+        totalEnvs.put("pipelineTaskId", String.valueOf(pipelineTaskId));
         totalEnvs.put("kubeJobId", String.valueOf(kubeJobId));
 
         command += " && " + "python3 /run.py SUCCESS";

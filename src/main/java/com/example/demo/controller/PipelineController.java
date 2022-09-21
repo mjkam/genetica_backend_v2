@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ public class PipelineController {
     private final PipelineService pipelineService;
 
     @PostMapping("/pipeline/run")
-    public ResponseEntity<Object> runPipeline(@RequestBody RunPipelineRequest request) {
+    public ResponseEntity<Object> runPipeline(@RequestBody RunPipelineRequest request) throws IOException, InterruptedException {
         List<PipelineJobInputUserFile> pipelineJobInputUserFiles = request.getRequestFiles().stream()
                 .map(o -> new PipelineJobInputUserFile(o.getTaskId(), o.getTaskInputLabel(), o.getFileId()))
                 .collect(Collectors.toList());
