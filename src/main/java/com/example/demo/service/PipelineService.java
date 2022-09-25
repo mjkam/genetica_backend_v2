@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,60 +23,47 @@ public class PipelineService {
     private final PipelineJobEnvRepository pipelineJobEnvRepository;
     private final PipelineJobUserFileRepository pipelineJobUserFileRepository;
     private final PipelineTaskJobRepository pipelineTaskJobRepository;
-
-    private final TaskJobRepository taskJobRepository;
     private final KubeJobRepository kubeJobRepository;
 
     private final BashExecutor bashExecutor;
     private final KubeClient kubeClient;
 
     public void runPipeline(long pipelineId, List<PipelineJobInputUserFile> pipelineJobInputUserFiles) throws IOException, InterruptedException {
+        // Todo: pipeline 시작시에 해당 노드에 데이터 삭제. 남아있는 라벨... 이거는 잡 끝날때 라벨 삭제해줘야함 덮어쓰기되면 하고
         Pipeline pipeline = pipelineRepository.findById(pipelineId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Pipeline. id: %d", pipelineId)));
-
         // pipelineJob 생성
         PipelineJob pipelineJob = pipelineJobRepository.save(new PipelineJob(pipeline));
 
-        String sampleId = "";
-        List<PipelineJobEnv> pipelineJobEnvs = new ArrayList<>();
         List<PipelineJobUserFile> pipelineJobUserFiles = new ArrayList<>();
+
         for (PipelineJobInputUserFile pipelineJobInputUserFile: pipelineJobInputUserFiles) {
             UserFile userFile = userFileRepository.findById(pipelineJobInputUserFile.getFileId())
                     .orElseThrow(() -> new EntityNotFoundException(String.format("UserFile. Id: %d", pipelineJobInputUserFile.getFileId())));
 
-            pipelineJobEnvs.add(new PipelineJobEnv(pipelineJob, pipelineJobInputUserFile.getPipelineTaskLabel(), userFile.getS3Name()));
-            pipelineJobUserFiles.add(new PipelineJobUserFile(pipelineJob, userFile, pipelineJobInputUserFile.getPipelineTaskLabel(), PipelineJobUserFileRelationType.INPUT));
-
-            // sampleId 추출
-            Pipeline.Input matchingPipelineInput = pipeline.getInputs().stream()
-                    .filter(o -> o.getPipelineTaskId().equals(pipelineJobInputUserFile.getPipelineTaskId()))
-                    .filter(o -> o.getPipelineTaskLabel().equals(pipelineJobInputUserFile.getPipelineTaskLabel()))
+            Pipeline.Task task = pipeline.getTasks().stream()
+                    .filter(o -> o.getId().equals(pipelineJobInputUserFile.getPipelineTaskId()))
                     .findAny()
-                    .orElseThrow(() -> new RuntimeException("matching Pipeline Input not found"));
+                    .orElseThrow(() -> new RuntimeException("input file task not found"));
 
-            if (matchingPipelineInput.isSample()) {
-                if (sampleId.equals("")) {
-                    sampleId = userFile.getSampleId();
-                } else {
-                    if (!sampleId.equals(userFile.getSampleId())) {
-                        throw new RuntimeException("sampleId is different");
-                    }
-                }
-            }
+            Pipeline.Task.Input input = task.getInputs().stream()
+                    .filter(o -> o.getType().equals(PipelineTaskInputType.PIPELINE_INPUT))
+                    .filter(o -> o.getToolLabel().equals(pipelineJobInputUserFile.getPipelineTaskLabel()))
+                    .findAny()
+                    .orElseThrow(() -> new RuntimeException("input not found"));
+
+            pipelineJobUserFiles.add(new PipelineJobUserFile(pipelineJob, userFile, pipelineJobInputUserFile.getPipelineTaskLabel(), PipelineJobUserFileRelationType.INPUT, task.getId()));
         }
+        pipelineJobUserFileRepository.saveAll(pipelineJobUserFiles);
+        List<PipelineTaskJob> executedPipelineTaskJob = pipelineTaskJobRepository.findByPipelineJobId(pipelineId);
 
-        if (!sampleId.equals("")) {
-            pipelineJobEnvs.add(new PipelineJobEnv(pipelineJob, "SAMPLE_ID", sampleId));
-        }
-        pipelineJobEnvs = pipelineJobEnvRepository.saveAll(pipelineJobEnvs);
-        pipelineJobUserFiles = pipelineJobUserFileRepository.saveAll(pipelineJobUserFiles);
-
-        runNewTask(pipelineJob.getId(), findNewTask(pipelineJob.getId()));
+        runNewTask(pipelineJob.getId(), findNewTask(pipelineJob.getId(), executedPipelineTaskJob));
     }
 
     public void runNewTask(long pipelineJobId, Pipeline.Task pipelineTask) throws IOException, InterruptedException {
         PipelineJob pipelineJob = pipelineJobRepository.getReferenceById(pipelineJobId);
         PipelineTaskJob pipelineTaskJob = pipelineTaskJobRepository.save(new PipelineTaskJob(pipelineJob, pipelineTask.getId()));
+        System.out.println("new TaskId: " + pipelineTaskJob.getPipelineTaskId());
 
         List<PipelineJobEnv> pipelineJobEnvs = pipelineJobEnvRepository.findPipelineJobEnvs(pipelineJobId);
 
@@ -89,14 +77,66 @@ public class PipelineService {
         kubeJobs.add(createLabelingKubeJob(pipelineTaskJob, sequenceId++, String.valueOf(pipelineJobId)));
 
         // input
+        String sampleId = null;
+        List<PipelineJobEnv> newPipelineJobEnvs = new ArrayList<>();
         for (Pipeline.Task.Input pipelineTaskInput: pipelineTask.getInputs()) {
+
+            // 파이프라인의 입력 파일이면
             if (pipelineTaskInput.getType().equals(PipelineTaskInputType.PIPELINE_INPUT)) {
                 PipelineJobUserFile pipelineJobUserFile = relatedInputFiles.stream()
                         .filter(o -> o.getLabel().equals(pipelineTaskInput.getToolLabel()))
                         .findAny()
                         .orElseThrow(() -> new EntityNotFoundException(String.format("input file not found. label: %s", pipelineTaskInput.getSourcePipelineTaskLabel())));
+                UserFile userFile = pipelineJobUserFile.getUserFile();
+                if (!userFile.getSampleId().equals("")) {
+                    if (sampleId == null) {
+                        sampleId = userFile.getSampleId();
+                    } else {
+                        if (!sampleId.equals(userFile.getSampleId())) {
+                            throw new RuntimeException(String.format("sample id different : %s", userFile.getSampleId()));
+                        }
+                    }
+                }
+
+                String fileName = pipelineJobUserFile.getUserFile().getS3Name();
+                PipelineJobEnv pipelineJobEnv = pipelineJobEnvRepository.save(new PipelineJobEnv(pipelineJob, pipelineTask.getId(), pipelineTaskInput.getToolLabel(), fileName));
+                newPipelineJobEnvs.add(pipelineJobEnv);
                 kubeJobs.add(createCopyInputJob(pipelineTaskJob, sequenceId++, pipelineJobUserFile.getUserFile()));
             }
+
+            // 파이프라인 내 툴의 아웃풋일경우
+            if (pipelineTaskInput.getType().equals(PipelineTaskInputType.TOOL_OUTPUT)) {
+                List<PipelineJobEnv> sourceTaskEnvs = pipelineJobEnvs.stream()
+                        .filter(o -> o.getPipelineTaskId().equals(pipelineTaskInput.getSourcePipelineTaskId()))
+                        .collect(Collectors.toList());
+
+                PipelineJobEnv pipelineJobEnv1 = sourceTaskEnvs.stream()
+                        .filter(o -> o.getKeyName().equals(pipelineTaskInput.getSourcePipelineTaskLabel()))
+                        .findAny()
+                        .orElseThrow(() -> new EntityNotFoundException("output not found"));
+
+                PipelineJobEnv save = pipelineJobEnvRepository.save(new PipelineJobEnv(pipelineJob, pipelineTask.getId(), pipelineTaskInput.getToolLabel(), pipelineJobEnv1.getValue()));
+                newPipelineJobEnvs.add(save);
+
+                PipelineJobEnv pipelineJobEnv = sourceTaskEnvs.stream()
+                        .filter(o -> o.getKeyName().equals("SAMPLE_ID"))
+                        .findAny()
+                        .orElse(null);
+
+                if (pipelineJobEnv != null) {
+                    if (sampleId == null) {
+                        sampleId = pipelineJobEnv.getValue();
+                    } else {
+                        if (!sampleId.equals(pipelineJobEnv.getValue())) {
+                            throw new RuntimeException(String.format("sample id diff. %s, %s", sampleId));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (sampleId != null) {
+            pipelineJobEnvs.add(pipelineJobEnvRepository.save(new PipelineJobEnv(pipelineJob, pipelineTask.getId(), "SAMPLE_ID", sampleId)));
         }
 
         // command
@@ -119,10 +159,9 @@ public class PipelineService {
             }
         }
 
-        kubeJobs.add(createCleanupJob(pipelineTaskJob, sequenceId++, JobStatus.RUNNING));
         kubeJobs = kubeJobRepository.saveAll(kubeJobs);
 
-        // Todo: cleanup을 시작할때 해도되고끝날때 해도되는데 시작할때하는게편할듯
+
 
         System.out.println("==================RUN NEW TASK==================");
         for (KubeJob kubeJob: kubeJobs) {
@@ -135,7 +174,7 @@ public class PipelineService {
     }
 
 
-    public Pipeline.Task findNewTask(long pipelineJobId) {
+    public Pipeline.Task findNewTask(long pipelineJobId, List<PipelineTaskJob> executedPipelineTaskJobs) {
         PipelineJob pipelineJob = pipelineJobRepository.findById(pipelineJobId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("PipelineJob. Id: %d", pipelineJobId)));
 
@@ -143,10 +182,24 @@ public class PipelineService {
 
         for (Pipeline.Task pipelineTask: pipeline.getTasks()) {
             boolean canRun = true;
+
+            // 이미 완료한거 제거
+            PipelineTaskJob pipelineTaskJob1 = executedPipelineTaskJobs.stream()
+                    .filter(o -> o.getPipelineTaskId().equals(pipelineTask.getId()))
+                    .findAny()
+                    .orElse(null);
+
+            if (pipelineTaskJob1 != null) {
+                continue;
+            }
+
             for (Pipeline.Task.Input pipelineTaskInput: pipelineTask.getInputs()) {
                 if (pipelineTaskInput.getType().equals(PipelineTaskInputType.TOOL_OUTPUT)) {
-                    PipelineTaskJob pipelineTaskJob = taskJobRepository.findById(pipelineTaskInput.getSourcePipelineTaskId().longValue())
-                            .orElseThrow(() -> new EntityNotFoundException(String.format("taskJob. Id: %d", pipelineTaskInput.getSourcePipelineTaskId())));
+                    PipelineTaskJob pipelineTaskJob = executedPipelineTaskJobs.stream()
+                            .filter(o -> o.getPipelineTaskId().equals(pipelineTaskInput.getSourcePipelineTaskId()))
+                            .findAny()
+                            .orElseThrow(() -> new RuntimeException(pipelineTaskInput.getSourcePipelineTaskId() + ""));
+
                     if (!pipelineTaskJob.isSuccess()) {
                         canRun = false;
                         break;
@@ -192,7 +245,7 @@ public class PipelineService {
         PipelineJob pipelineJob = pipelineJobRepository.findById(pipelineJobId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("PipelineJob. id: %d", pipelineJobId)));
 
-        PipelineTaskJob pipelineTaskJob = pipelineTaskJobRepository.findById(pipelineJobId)
+        PipelineTaskJob pipelineTaskJob = pipelineTaskJobRepository.findOne(pipelineJobId, pipelineTaskId)
                 .orElseThrow(() -> new RuntimeException("PipelineTaskJob Not Found"));
 
         if (jobStatus.equals(JobStatus.FAILED)) {
@@ -218,15 +271,11 @@ public class PipelineService {
                         .orElseThrow(() -> new RuntimeException(String.format("PipelineTaskJob Not found. taskId: %d", pipelineTaskId)));
                 targetPipelineTaskJob.setTaskJobStatus(jobStatus);
 
-                PipelineTaskJob notFinished = allTaskJobs.stream()
-                        .filter(o -> !o.isFinished())
-                        .findAny()
-                        .orElse(null);
-
-                if (notFinished == null) {
+                if (pipelineJob.getPipeline().getTasks().size() == allTaskJobs.size()) {
                     pipelineJob.setJobStatus(JobStatus.SUCCESS);
                 } else {
-                    Pipeline.Task newTask = findNewTask(pipelineJobId);
+                    Pipeline.Task newTask = findNewTask(pipelineJobId, allTaskJobs);
+                    System.out.println("found new task: " + newTask.getId());
                     runNewTask(pipelineJobId, newTask);
                 }
 
@@ -263,6 +312,9 @@ public class PipelineService {
 
 
         for (Tool.Output output: tool.getOutputs()) {
+            String outputFileName = bashExecutor.echo(output.getOutputName(), pipelineJobEnvs);
+            pipelineJobEnvs.add(pipelineJobEnvRepository.save(new PipelineJobEnv(pipelineJob, pipelineTaskId, output.getLabel(), outputFileName)));
+
             Pipeline.Output output1 = pipelineJob.getPipeline().getOutputs().stream()
                     .filter(o -> o.getPipelineTaskId().equals(pipelineTask.getId()))
                     .filter(o -> o.getPipelineTaskLabel().equals(output.getLabel()))
@@ -282,7 +334,9 @@ public class PipelineService {
                 } else {
                     newUserFile = new UserFile(resultFileName, resultFileName, "");
                 }
-                userFileRepository.save(newUserFile);
+                newUserFile = userFileRepository.save(newUserFile);
+
+                pipelineJobUserFileRepository.save(new PipelineJobUserFile(pipelineJob, newUserFile, output.getLabel(), PipelineJobUserFileRelationType.OUTPUT, pipelineTaskId));
             }
         }
     }

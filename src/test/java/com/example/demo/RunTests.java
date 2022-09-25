@@ -103,7 +103,7 @@ public class RunTests {
         List<PipelineJobInputUserFile> pipelineJobInputUserFiles = new ArrayList<>();
         pipelineJobInputUserFiles.add(new PipelineJobInputUserFile(1, "INPUT_REFERENCE", userFile.getId()));
 
-        pipelineService.runPipeline(pipeline.getId(), pipelineJobInputUserFiles);
+//        pipelineService.runPipeline(pipeline.getId(), pipelineJobInputUserFiles);
     }
 
     @Test

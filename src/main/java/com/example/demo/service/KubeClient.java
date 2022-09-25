@@ -24,7 +24,7 @@ public class KubeClient {
     private static final Integer BACK_OFF_LIMIT = 0;
     private static final String NODE_NAME_ENV_KEY = "MY_NODE_NAME";
 
-    private static final String SERVER_URL = "https://0c51-175-195-237-20.ngrok.io/result";
+    private static final String SERVER_URL = "https://fa3e-175-195-237-20.ngrok.io/result";
 
     private final BatchV1Api apiInstance;
 
@@ -45,6 +45,7 @@ public class KubeClient {
         totalEnvs.put("pipelineTaskId", String.valueOf(pipelineTaskId));
         totalEnvs.put("kubeJobId", String.valueOf(kubeJobId));
 
+        command = "python3 /run.py RUNNING && " + command;
         command += " && " + "python3 /run.py SUCCESS";
 
 

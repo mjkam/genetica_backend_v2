@@ -21,14 +21,18 @@ public class PipelineJobEnv {
     @JoinColumn(name = "pipeline_job_id")
     private PipelineJob pipelineJob;
 
+    @Column(name = "pipeline_task_id")
+    private Integer pipelineTaskId;
+
     @Column(name = "key_name")
     private String keyName;
 
     @Column(name = "value")
     private String value;
 
-    public PipelineJobEnv(PipelineJob pipelineJob, String key, String value) {
+    public PipelineJobEnv(PipelineJob pipelineJob, int pipelineTaskId, String key, String value) {
         this.pipelineJob = pipelineJob;
+        this.pipelineTaskId = pipelineTaskId;
         this.keyName = key;
         this.value = value;
     }

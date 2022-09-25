@@ -24,6 +24,9 @@ public class PipelineJobUserFile {
     @JoinColumn(name = "user_file_id")
     private UserFile userFile;
 
+    @Column(name = "pipeline_task_id")
+    private Integer pipelineTaskId;
+
     @Column(name = "relation_type")
     @Enumerated(EnumType.STRING)
     private PipelineJobUserFileRelationType pipelineJobUserFileRelationType;
@@ -31,10 +34,11 @@ public class PipelineJobUserFile {
     @Column(name = "label")
     private String label;
 
-    public PipelineJobUserFile(PipelineJob pipelineJob, UserFile userFile, String label, PipelineJobUserFileRelationType pipelineJobUserFileRelationType) {
+    public PipelineJobUserFile(PipelineJob pipelineJob, UserFile userFile, String label, PipelineJobUserFileRelationType pipelineJobUserFileRelationType, int pipelineTaskId) {
         this.pipelineJob = pipelineJob;
         this.userFile = userFile;
         this.label = label;
         this.pipelineJobUserFileRelationType = pipelineJobUserFileRelationType;
+        this.pipelineTaskId = pipelineTaskId;
     }
 }
