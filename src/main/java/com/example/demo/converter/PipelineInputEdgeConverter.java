@@ -13,12 +13,11 @@ import java.util.List;
 
 @Converter
 @RequiredArgsConstructor
-public class PipelineInputConverter implements AttributeConverter<List<Pipeline.Input>, String> {
-
+public class PipelineInputEdgeConverter implements AttributeConverter<List<Pipeline.InputEdge>, String> {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String convertToDatabaseColumn(List<Pipeline.Input> attribute) {
+    public String convertToDatabaseColumn(List<Pipeline.InputEdge> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -27,9 +26,9 @@ public class PipelineInputConverter implements AttributeConverter<List<Pipeline.
     }
 
     @Override
-    public List<Pipeline.Input> convertToEntityAttribute(String dbData) {
+    public List<Pipeline.InputEdge> convertToEntityAttribute(String dbData) {
         try {
-            return Arrays.asList(objectMapper.readValue(dbData, Pipeline.Input[].class));
+            return Arrays.asList(objectMapper.readValue(dbData, Pipeline.InputEdge[].class));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

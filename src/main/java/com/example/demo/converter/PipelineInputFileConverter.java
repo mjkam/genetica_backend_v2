@@ -1,7 +1,6 @@
 package com.example.demo.converter;
 
 import com.example.demo.entity.Pipeline;
-import com.example.demo.entity.Tool;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +12,12 @@ import java.util.List;
 
 @Converter
 @RequiredArgsConstructor
-public class PipelineOutputConverter implements AttributeConverter<List<Pipeline.Output>, String> {
+public class PipelineInputFileConverter implements AttributeConverter<List<Pipeline.InputFile>, String> {
+
     private final ObjectMapper objectMapper;
 
     @Override
-    public String convertToDatabaseColumn(List<Pipeline.Output> attribute) {
+    public String convertToDatabaseColumn(List<Pipeline.InputFile> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -26,9 +26,9 @@ public class PipelineOutputConverter implements AttributeConverter<List<Pipeline
     }
 
     @Override
-    public List<Pipeline.Output> convertToEntityAttribute(String dbData) {
+    public List<Pipeline.InputFile> convertToEntityAttribute(String dbData) {
         try {
-            return Arrays.asList(objectMapper.readValue(dbData, Pipeline.Output[].class));
+            return Arrays.asList(objectMapper.readValue(dbData, Pipeline.InputFile[].class));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

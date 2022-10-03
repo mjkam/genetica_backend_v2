@@ -11,15 +11,14 @@ import javax.persistence.*;
 @Table(name = "pipeline_job_env")
 @NoArgsConstructor
 @Getter
-public class PipelineJobEnv {
+public class PipelineTaskJobEnv {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_job_id")
-    private PipelineJob pipelineJob;
+    @Column(name = "pipeline_job_id")
+    private Long pipelineJobId;
 
     @Column(name = "pipeline_task_id")
     private Integer pipelineTaskId;
@@ -30,8 +29,8 @@ public class PipelineJobEnv {
     @Column(name = "value")
     private String value;
 
-    public PipelineJobEnv(PipelineJob pipelineJob, int pipelineTaskId, String key, String value) {
-        this.pipelineJob = pipelineJob;
+    public PipelineTaskJobEnv(long pipelineJobId, int pipelineTaskId, String key, String value) {
+        this.pipelineJobId = pipelineJobId;
         this.pipelineTaskId = pipelineTaskId;
         this.keyName = key;
         this.value = value;

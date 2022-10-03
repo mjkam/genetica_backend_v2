@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface PipelineJobUserFileRepository extends JpaRepository<PipelineJobUserFile, Long> {
-    @Query("SELECT m FROM PipelineJobUserFile m WHERE m.pipelineJob.id = :pipelineJobId AND m.pipelineJobUserFileRelationType = :relationType")
-    List<PipelineJobUserFile> findInputs(@Param("pipelineJobId") long pipelineJobId, @Param("relationType")PipelineJobUserFileRelationType relationType);
+    @Query("SELECT m FROM PipelineJobUserFile m WHERE m.pipelineJobId = :pipelineJobId AND m.pipelineJobUserFileRelationType = :relationType")
+    List<PipelineJobUserFile> findPipelineInputUserFiles(@Param("pipelineJobId") long pipelineJobId, @Param("relationType")PipelineJobUserFileRelationType relationType);
 }

@@ -1,8 +1,8 @@
 package com.example.demo.converter;
 
+import com.example.demo.entity.Pipeline;
 import com.example.demo.entity.Tool;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
@@ -13,11 +13,11 @@ import java.util.List;
 
 @Converter
 @RequiredArgsConstructor
-public class ToolInputConverter implements AttributeConverter<List<Tool.Input>, String> {
+public class PipelineOutputEdgeConverter implements AttributeConverter<List<Pipeline.OutputEdge>, String> {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String convertToDatabaseColumn(List<Tool.Input> attribute) {
+    public String convertToDatabaseColumn(List<Pipeline.OutputEdge> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -26,9 +26,9 @@ public class ToolInputConverter implements AttributeConverter<List<Tool.Input>, 
     }
 
     @Override
-    public List<Tool.Input> convertToEntityAttribute(String dbData) {
+    public List<Pipeline.OutputEdge> convertToEntityAttribute(String dbData) {
         try {
-            return Arrays.asList(objectMapper.readValue(dbData, Tool.Input[].class));
+            return Arrays.asList(objectMapper.readValue(dbData, Pipeline.OutputEdge[].class));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.PipelineJobEnv;
+import com.example.demo.entity.PipelineTaskJobEnv;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
@@ -24,7 +24,7 @@ public class KubeClient {
     private static final Integer BACK_OFF_LIMIT = 0;
     private static final String NODE_NAME_ENV_KEY = "MY_NODE_NAME";
 
-    private static final String SERVER_URL = "https://fa3e-175-195-237-20.ngrok.io/result";
+    private static final String SERVER_URL = "https://00b0-14-36-251-74.ngrok.io/result";
 
     private final BatchV1Api apiInstance;
 
@@ -34,11 +34,11 @@ public class KubeClient {
         this.apiInstance = new BatchV1Api(client);
     }
 
-    public void runKubeJob(String jobName, String imageName, String command, List<PipelineJobEnv> pipelineJobEnvs, long pipelineJobId, long pipelineTaskId, long kubeJobId) {
+    public void runKubeJob(String jobName, String imageName, String command, List<PipelineTaskJobEnv> pipelineTaskJobEnvs, long pipelineJobId, long pipelineTaskId, long kubeJobId) {
         Map<String, String> totalEnvs = new HashMap<>();
 
-        for (PipelineJobEnv pipelineJobEnv: pipelineJobEnvs) {
-            totalEnvs.put(pipelineJobEnv.getKeyName(), pipelineJobEnv.getValue());
+        for (PipelineTaskJobEnv pipelineTaskJobEnv : pipelineTaskJobEnvs) {
+            totalEnvs.put(pipelineTaskJobEnv.getKeyName(), pipelineTaskJobEnv.getValue());
         }
         totalEnvs.put("SERVER_URL", SERVER_URL);
         totalEnvs.put("pipelineJobId", String.valueOf(pipelineJobId));

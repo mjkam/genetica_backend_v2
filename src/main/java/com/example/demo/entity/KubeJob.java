@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import com.example.demo.enums.JobStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -10,18 +11,18 @@ import javax.persistence.*;
 @Table(name = "kube_job")
 @NoArgsConstructor
 @Getter
+@ToString
 public class KubeJob {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "task_job_id")
-    private PipelineTaskJob pipelineTaskJob;
+    @Column(name = "pipeline_task_job_id")
+    private Long pipelineTaskJobId;
 
-    @Column(name = "sequence_id")
-    private Integer sequenceId;
+    @Column(name = "sequence")
+    private Integer sequence;
 
     @Column(name = "image")
     private String image;
@@ -33,9 +34,9 @@ public class KubeJob {
     @Enumerated(EnumType.STRING)
     private JobStatus status;
 
-    public KubeJob(PipelineTaskJob pipelineTaskJob, int sequenceId, String command, String image) {
-        this.pipelineTaskJob = pipelineTaskJob;
-        this.sequenceId = sequenceId;
+    public KubeJob(long pipelineTaskJobId, int sequence, String image, String command) {
+        this.pipelineTaskJobId = pipelineTaskJobId;
+        this.sequence = sequence;
         this.command = command;
         this.image = image;
         this.status = JobStatus.QUEUED;

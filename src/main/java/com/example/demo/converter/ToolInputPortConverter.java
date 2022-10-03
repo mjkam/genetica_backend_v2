@@ -1,5 +1,6 @@
 package com.example.demo.converter;
 
+import com.example.demo.entity.Pipeline;
 import com.example.demo.entity.Tool;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,11 +13,11 @@ import java.util.List;
 
 @Converter
 @RequiredArgsConstructor
-public class ToolOutputConverter implements AttributeConverter<List<Tool.Output>, String> {
+public class ToolInputPortConverter implements AttributeConverter<List<Tool.InputPort>, String> {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String convertToDatabaseColumn(List<Tool.Output> attribute) {
+    public String convertToDatabaseColumn(List<Tool.InputPort> attribute) {
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (JsonProcessingException e) {
@@ -25,9 +26,9 @@ public class ToolOutputConverter implements AttributeConverter<List<Tool.Output>
     }
 
     @Override
-    public List<Tool.Output> convertToEntityAttribute(String dbData) {
+    public List<Tool.InputPort> convertToEntityAttribute(String dbData) {
         try {
-            return Arrays.asList(objectMapper.readValue(dbData, Tool.Output[].class));
+            return Arrays.asList(objectMapper.readValue(dbData, Tool.InputPort[].class));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

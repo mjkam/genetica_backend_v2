@@ -16,29 +16,27 @@ public class PipelineJobUserFile {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pipeline_job_id")
-    private PipelineJob pipelineJob;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_file_id")
-    private UserFile userFile;
+    @Column(name = "pipeline_job_id")
+    private Long pipelineJobId;
 
     @Column(name = "pipeline_task_id")
     private Integer pipelineTaskId;
+
+    @Column(name = "pipeline_task_port_id")
+    private Integer pipelineTaskPortId;
+
+    @Column(name = "user_file_id")
+    private Long userFileId;
 
     @Column(name = "relation_type")
     @Enumerated(EnumType.STRING)
     private PipelineJobUserFileRelationType pipelineJobUserFileRelationType;
 
-    @Column(name = "label")
-    private String label;
-
-    public PipelineJobUserFile(PipelineJob pipelineJob, UserFile userFile, String label, PipelineJobUserFileRelationType pipelineJobUserFileRelationType, int pipelineTaskId) {
-        this.pipelineJob = pipelineJob;
-        this.userFile = userFile;
-        this.label = label;
-        this.pipelineJobUserFileRelationType = pipelineJobUserFileRelationType;
+    public PipelineJobUserFile(long pipelineJobId, int pipelineTaskId, int pipelineTaskPortId, long userFileId, PipelineJobUserFileRelationType pipelineJobUserFileRelationType) {
+        this.pipelineJobId = pipelineJobId;
         this.pipelineTaskId = pipelineTaskId;
+        this.pipelineTaskPortId = pipelineTaskPortId;
+        this.userFileId = userFileId;
+        this.pipelineJobUserFileRelationType = pipelineJobUserFileRelationType;
     }
 }

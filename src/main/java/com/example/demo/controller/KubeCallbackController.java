@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.controller.dto.KubeJobStatusUpdateRequest;
+import com.example.demo.service.PipelineResultService;
 import com.example.demo.service.PipelineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,13 +14,13 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 public class KubeCallbackController {
-    private final PipelineService pipelineService;
+    private final PipelineResultService pipelineResultService;
 
     @PostMapping("/result")
     public ResponseEntity<Object> ok(@RequestBody KubeJobStatusUpdateRequest request) throws IOException, InterruptedException {
         System.out.println("====callback=====");
         System.out.println(request);
-        pipelineService.handleKubeJobResult(
+        pipelineResultService.handleKubeJobResult(
                 request.getPipelineJobId(),
                 request.getPipelineTaskId(),
                 request.getKubeJobId(),
