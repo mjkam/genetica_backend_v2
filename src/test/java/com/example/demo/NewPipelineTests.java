@@ -34,20 +34,20 @@ public class NewPipelineTests {
 
     @Test
     void test() throws IOException, InterruptedException {
-        UserFile referenceFile = userFileRepository.save(UserFileFactory.userFileWithoutId("human_g1k_v37_decoy.fasta.tar", "human_g1k_v37_decoy.fasta.tar", ""));
-        UserFile read_1 = userFileRepository.save(UserFileFactory.userFileWithoutId("ERR101899_1.fastq.gz", "ERR101899_1.fastq.gz", "ERR101899"));
-        UserFile read_2 = userFileRepository.save(UserFileFactory.userFileWithoutId("ERR101899_2.fastq.gz", "ERR101899_2.fastq.gz", "ERR101899"));
+        UserFile referenceFile = userFileRepository.save(UserFileFactory.userFileWithoutId("human_g1k_v37_decoy.fasta.tar", 10293018, "human_g1k_v37_decoy.fasta.tar", ""));
+        UserFile read_1 = userFileRepository.save(UserFileFactory.userFileWithoutId("ERR101899_1.fastq.gz", 29184, "ERR101899_1.fastq.gz", "ERR101899"));
+        UserFile read_2 = userFileRepository.save(UserFileFactory.userFileWithoutId("ERR101899_2.fastq.gz", 110293058, "ERR101899_2.fastq.gz", "ERR101899"));
 
         Tool tool1 = toolRepository.save(ToolFactory.unTar(1L));
         Tool tool2 = toolRepository.save(ToolFactory.bwaMem(2L));
         Tool tool3 = toolRepository.save(ToolFactory.samToolsView(3L));
 
-        Pipeline pipeline = pipelineRepository.save(PipelineFactory.wesPipeline());
-
-
-        PipelineInputUserFile input1 = pipelineInputUserFile(1, referenceFile.getId());
-        PipelineInputUserFile input2 = pipelineInputUserFile(2, read_1.getId());
-        PipelineInputUserFile input3 = pipelineInputUserFile(3, read_2.getId());
+//        Pipeline pipeline = pipelineRepository.save(PipelineFactory.wesPipeline());
+//
+//
+//        PipelineInputUserFile input1 = pipelineInputUserFile(1, referenceFile.getId());
+//        PipelineInputUserFile input2 = pipelineInputUserFile(2, read_1.getId());
+//        PipelineInputUserFile input3 = pipelineInputUserFile(3, read_2.getId());
 
 
 //        pipelineService.executePipeline(1L, Arrays.asList(input1, input2, input3));

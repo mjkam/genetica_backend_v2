@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import com.example.demo.converter.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.List;
@@ -11,11 +12,15 @@ import java.util.List;
 @Table(name = "pipeline")
 @NoArgsConstructor
 @Getter
+@Setter
 public class Pipeline {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
+
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "tasks")
     @Convert(converter = PipelineTaskConverter.class)

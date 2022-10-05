@@ -35,6 +35,7 @@ public class PipelineFactory {
         Pipeline.OutputEdge outputEdge1 = outputEdge(1, 3, 1, 1);
 
         ReflectionTestUtils.setField(pipeline, "id", 1L);
+        ReflectionTestUtils.setField(pipeline, "name", "Whole Exome Sequencing - BWA + GATK 4.0");
         ReflectionTestUtils.setField(pipeline, "tasks", Arrays.asList(task1, task2, task3));
         ReflectionTestUtils.setField(pipeline, "inputFiles", Arrays.asList(inputFile1, inputFile2, inputFile3));
         ReflectionTestUtils.setField(pipeline, "outputFiles", List.of(outputFile1));

@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.controller.dto.GetPipelinesResponse;
 import com.example.demo.controller.dto.RunPipelineRequest;
+import com.example.demo.controller.dto.SavePipelineRequest;
 import com.example.demo.service.PipelineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,12 @@ public class PipelineController {
     @GetMapping("/pipelines")
     public ResponseEntity<GetPipelinesResponse> getPipelines() {
         return ResponseEntity.ok(new GetPipelinesResponse(pipelineService.getPipeline()));
+    }
+
+    @PostMapping("/pipeline")
+    public ResponseEntity<Object> savePipeline(@RequestBody SavePipelineRequest request) {
+        pipelineService.savePipeline(request);
+        return ResponseEntity.ok().build();
     }
 
 

@@ -130,9 +130,9 @@ public class PipelineResultService {
             if (pipeline.isOutput(pipelineTaskJob.getPipelineTaskId(), outputPort.getId())) {
                 UserFile userFile;
                 if (sample_id == null) {
-                    userFile = new UserFile(echo, echo, "");
+                    userFile = new UserFile(echo, echo, 132940, "/", "", LocalDateTime.now());
                 } else {
-                    userFile = new UserFile(echo, echo, sample_id.getValue());
+                    userFile = new UserFile(echo, echo, 54132, "/", sample_id.getValue(), LocalDateTime.now());
                 }
                 userFile = userFileRepository.save(userFile);
                 pipelineJobUserFiles.add(pipelineJobUserFileRepository.save(new PipelineJobUserFile(pipelineJob.getId(), pipelineTaskJob.getPipelineTaskId(), outputPort.getId(), userFile.getId(), PipelineJobUserFileRelationType.OUTPUT)));

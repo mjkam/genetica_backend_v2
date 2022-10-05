@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.controller.dto.SavePipelineRequest;
 import com.example.demo.entity.*;
 import com.example.demo.enums.PipelineJobUserFileRelationType;
 import com.example.demo.repository.*;
@@ -160,5 +161,19 @@ public class PipelineService {
                 pipelineJobId,
                 pipelineTaskJob.getId(),
                 targetJob.getId());
+    }
+
+    public void savePipeline(SavePipelineRequest request) {
+        Pipeline pipeline = new Pipeline();
+        pipeline.setName(request.getName());
+        pipeline.setTasks(request.getPipeline().getTasks());
+        pipeline.setInputFiles(request.getPipeline().getInputFiles());
+        pipeline.setOutputFiles(request.getPipeline().getOutputFiles());
+        pipeline.setInputEdges(request.getPipeline().getInputEdges());
+        pipeline.setConnectEdges(request.getPipeline().getConnectEdges());
+        pipeline.setOutputEdges(request.getPipeline().getOutputEdges());
+
+        pipelineRepository.save(pipeline);
+
     }
 }

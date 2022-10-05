@@ -23,6 +23,7 @@ public class GetPipelinesResponse {
     @Getter
     static class PipelineDto {
         private Long id;
+        private String name;
         private List<TaskDto> tasks;
         private List<InputFileDto> inputFiles;
         private List<OutputFileDto> outputFiles;
@@ -32,6 +33,7 @@ public class GetPipelinesResponse {
 
         public PipelineDto(Pipeline pipeline) {
             this.id = pipeline.getId();
+            this.name = pipeline.getName();
             this.tasks = pipeline.getTasks().stream()
                     .map(TaskDto::new)
                     .collect(Collectors.toList());
